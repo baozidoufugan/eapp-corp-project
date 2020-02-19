@@ -1,18 +1,19 @@
 package com.model;
 
+import com.alibaba.fastjson.JSON;
+import com.taobao.api.internal.util.json.JSONWriter;
+import org.springframework.util.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import com.alibaba.fastjson.JSON;
-
-import com.dingtalk.api.request.OapiProcessinstanceCreateRequest.FormComponentValueVo;
-import org.springframework.util.CollectionUtils;
 
 /**
  * @author 令久
  * @date 2018/08/22
  * 审批实例
+ *
+ * 模型地址文档 https://ding-doc.dingtalk.com/doc#/serverapi2/cmct1a
  */
 public class ProcessInstanceInputVO {
     /**
@@ -39,6 +40,11 @@ public class ProcessInstanceInputVO {
      * 单行输入框、多行输入框的表单数据
      */
     private List<TextForm> textForms;
+
+    /**
+     * 数字输入框
+     */
+    private List<NumberForm> numberForms;
 
     /**
      * 图片表单数据
@@ -79,6 +85,35 @@ public class ProcessInstanceInputVO {
         }
 
         public void setValue(String value) {
+            this.value = value;
+        }
+    }
+
+    //可废弃，金额输入框可以直接用字符串。亲测可用
+    public static class NumberForm{
+        /**
+         * 表单控件名称
+         */
+        private String name;
+
+        /**
+         * 表单值
+         */
+        private Integer value;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Integer getValue() {
+            return value;
+        }
+
+        public void setValue(Integer value) {
             this.value = value;
         }
     }
@@ -126,6 +161,19 @@ public class ProcessInstanceInputVO {
          * 明细里的图片控件列表
          */
         private List<PictureForm> pictureForms;
+
+        /**
+         * 数字输入框
+         */
+        private List<NumberForm> numberForms;
+
+        public List<NumberForm> getNumberForms() {
+            return numberForms;
+        }
+
+        public void setNumberForms(List<NumberForm> numberForms) {
+            this.numberForms = numberForms;
+        }
 
         public String getName() {
             return name;
@@ -216,11 +264,19 @@ public class ProcessInstanceInputVO {
         this.originatorUserId = originatorUserId;
     }
 
+    public List<NumberForm> getNumberForms() {
+        return numberForms;
+    }
+
+    public void setNumberForms(List<NumberForm> numberForms) {
+        this.numberForms = numberForms;
+    }
+
     /**
      * 生成FormComponentValueVo，用于调用发起审批实例的接口
      * @return
      */
-    public List<FormComponentValueVo> generateForms() {
+    public String generateForms() {
         List<FormComponentValueVo> result = new ArrayList<>();
         if (!CollectionUtils.isEmpty(textForms)) {
             for (TextForm textForm : textForms) {
@@ -233,13 +289,25 @@ public class ProcessInstanceInputVO {
                 result.add(generateFormWithPictureForm(pictureForm));
             }
         }
+        if (!CollectionUtils.isEmpty(numberForms)) {
+            for (NumberForm numberForm : numberForms) {
+                result.add(generateFormWithNumberForm(numberForm));
+            }
+        }
 
         if (!CollectionUtils.isEmpty(detailForms)) {
             for (DetailForm detailForm : detailForms) {
                 result.add(generateFormWithDetailForm(detailForm));
             }
         }
-        return result;
+        return (new JSONWriter(false, false, true)).write(result);
+    }
+
+    private FormComponentValueVo generateFormWithNumberForm(NumberForm numberForm) {
+        FormComponentValueVo form = new FormComponentValueVo();
+        form.setName(numberForm.getName());
+        form.setValue(numberForm.getValue());
+        return form;
     }
 
     private FormComponentValueVo generateFormWithTextForm(TextForm textForm) {

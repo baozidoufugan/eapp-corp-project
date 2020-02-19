@@ -49,7 +49,7 @@ public class IndexController {
 		OapiUserGetuserinfoRequest request = new OapiUserGetuserinfoRequest();
 		request.setCode(requestAuthCode);
 		request.setHttpMethod("GET");
-
+		//请参考FAQ：https://open-doc.dingtalk.com/microapp/faquestions/cvbtph。错误原因：访问ip不在白名单之中,request ip=120.227.90.218 appKey(ding7n4hym6glkdydpgj)
 		OapiUserGetuserinfoResponse response;
 		try {
 			response = client.execute(request, accessToken);
